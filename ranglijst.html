@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suske en Wiske-ranglijst van de community</title>
+<meta name="description" content="Welke Suske en Wiske-albums winnen het vaakst? De ranglijst op basis van alle gespeelde toernooien.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Suske en Wiske-ranglijst van de community">
+<meta property="og:description" content="Welke albums winnen het vaakst in Het grote Suske en Wiske-toernooi?">
+<meta property="og:image" content="https://JOUW-SITE.netlify.app/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='10' fill='%23c4161c' stroke='%231d1a17' stroke-width='4'/%3E%3Cpath d='M32 13l5.6 11.4 12.6 1.8-9.1 8.9 2.1 12.5L32 41.7l-11.2 5.9 2.1-12.5-9.1-8.9 12.6-1.8z' fill='%23f2b630' stroke='%231d1a17' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>De <span>community</span>-ranglijst</h1>
+      <p class="sub">Alle stemmen uit Het grote Suske en Wiske-toernooi bij elkaar opgeteld.</p>
+    </div>
+    <div class="knoppen">
+      <a class="btn primair klein" href="./">← Speel het toernooi</a>
+    </div>
+  </header>
+
+  <section class="paneel" aria-labelledby="cijfers-titel">
+    <h2 id="cijfers-titel">In cijfers</h2>
+    <div class="rl-tegels" id="tegels">
+      <div class="tegel"><strong>…</strong><span>gestemde duels</span></div>
+      <div class="tegel"><strong>…</strong><span>toernooien gestart</span></div>
+      <div class="tegel"><strong>…</strong><span>toernooien afgemaakt</span></div>
+      <div class="tegel"><strong>…</strong><span>albums met stemmen</span></div>
+    </div>
+    <p class="melding" id="bijgewerkt"></p>
+  </section>
+
+  <section class="paneel" aria-labelledby="lijst-titel">
+    <div class="status">
+      <h2 id="lijst-titel">Ranglijst per album</h2>
+    </div>
+    <div class="rl-bediening">
+      <input type="search" id="zoek" placeholder="Zoek op titel of nummer…" aria-label="Zoek album">
+      <label for="sorteer" class="melding">Sorteer op</label>
+      <select id="sorteer">
+        <option value="score">Winstpercentage</option>
+        <option value="k">Vaakst kampioen</option>
+        <option value="n">Meeste duels</option>
+        <option value="nr">Albumnummer</option>
+      </select>
+      <label for="minimum" class="melding">Toon</label>
+      <select id="minimum">
+        <option value="0">Alle albums</option>
+        <option value="1">Minstens 1 duel</option>
+        <option value="5" selected>Minstens 5 duels</option>
+        <option value="20">Minstens 20 duels</option>
+        <option value="50">Minstens 50 duels</option>
+      </select>
+    </div>
+    <div class="tabwrap">
+      <table class="rl">
+        <thead>
+          <tr><th scope="col">Plek</th><th scope="col">Album</th><th scope="col" class="num">Won</th><th scope="col" class="num">Verloor</th><th scope="col">Winst</th><th scope="col" class="num">Kampioen</th></tr>
+        </thead>
+        <tbody id="rijen"><tr><td colspan="6" class="rl-leeg">Ranglijst laden…</td></tr></tbody>
+      </table>
+    </div>
+    <p class="melding">Hoe de ranglijst werkt: elk duel telt als één overwinning en één nederlaag. Duels waarbij iemand "Ken ik niet" koos of het lot liet beslissen, tellen niet mee. Albums met maar een paar duels worden in de volgorde iets richting 50% geschoven, zodat één toevallige winst niet meteen bovenaan staat. Je eigen laatste kampioen is geel gemarkeerd.</p>
+  </section>
+
+  <section class="paneel" aria-labelledby="recent-titel">
+    <h2 id="recent-titel">Laatste kampioenen</h2>
+    <ul class="chips" id="recent" style="max-height:none"><li>Laden…</li></ul>
+  </section>
+
+  <footer class="voet">
+    <p><strong>Onofficieel fanproject.</strong> Suske en Wiske is gemaakt door Willy Vandersteen; alle rechten liggen bij Standaard Uitgeverij. Deze site is daar niet mee verbonden en gebruikt alleen albumnummers en titels.</p>
+    <p>De ranglijst bevat alleen anonieme uitslagen van duels: geen namen, accounts of IP-adressen. Hij wordt elke paar minuten bijgewerkt.</p>
+  </footer>
+</div>
+
+<script src="albums.js"></script>
+<script>
+"use strict";
+const TITEL = new Map(window.SW_ALBUMS || []);
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const fmt = n => n.toLocaleString("nl-NL");
+let jouw = null;
+try{ jouw = Number(localStorage.getItem("swt-laatste-v1")) || null; }catch(e){}
+let data = null;
+
+function score(r){ return (r.w + 2) / (r.w + r.l + 4); }
+function render(){
+  if(!data) return;
+  const q = $("zoek").value.trim().toLowerCase();
+  const min = Number($("minimum").value), sort = $("sorteer").value;
+  const per = new Map(data.albums.filter(r => TITEL.has(r.nr)).map(r => [r.nr, r]));
+  let lijst = [...TITEL.keys()].map(nr => per.get(nr) || {nr, w:0, l:0, k:0}).map(r => ({...r, n:r.w+r.l, s:score(r)}));
+  // plek altijd op winstpercentage, ongeacht de gekozen sortering
+  const opScore = lijst.filter(r => r.n >= Math.max(min,1)).sort((a,b) => b.s-a.s || b.n-a.n || a.nr-b.nr);
+  const plek = new Map(opScore.map((r,i) => [r.nr, i+1]));
+  lijst = lijst.filter(r => r.n >= min);
+  if(q) lijst = lijst.filter(r => TITEL.get(r.nr).toLowerCase().includes(q) || String(r.nr).includes(q));
+  const cmp = {score:(a,b) => b.s-a.s || b.n-a.n || a.nr-b.nr, k:(a,b) => b.k-a.k || b.s-a.s, n:(a,b) => b.n-a.n || b.s-a.s, nr:(a,b) => a.nr-b.nr}[sort];
+  lijst.sort(cmp);
+  if(!lijst.length){
+    $("rijen").innerHTML = `<tr><td colspan="6" class="rl-leeg">${data.totaal.duels ? "Geen albums die aan je filter voldoen. Probeer een lager minimum." : "Nog geen stemmen. Speel het eerste toernooi en zet de ranglijst in gang!"}</td></tr>`;
+    return;
+  }
+  $("rijen").innerHTML = lijst.map(r => {
+    const p = plek.get(r.nr), pct = r.n ? Math.round(r.w / r.n * 100) : null;
+    return `<tr class="${p && p <= 3 ? "top3" : ""} ${r.nr === jouw ? "jouw" : ""}">
+      <td class="plek">${p || "–"}</td>
+      <td><span class="nr">${r.nr}</span>${esc(TITEL.get(r.nr))}${r.nr === jouw ? " <small>(jouw kampioen)</small>" : ""}</td>
+      <td class="num">${fmt(r.w)}</td>
+      <td class="num">${fmt(r.l)}</td>
+      <td>${pct === null ? "–" : `${pct}%<span class="winbalk" aria-hidden="true"><i style="width:${pct}%"></i></span>`}</td>
+      <td class="num">${r.k ? "🏆 " + fmt(r.k) : "–"}</td>
+    </tr>`;
+  }).join("");
+}
+function renderTegels(){
+  const t = data.totaal, metStemmen = data.albums.filter(r => TITEL.has(r.nr) && r.w + r.l > 0).length;
+  const tegel = (n, s) => `<div class="tegel"><strong>${fmt(n)}</strong><span>${s}</span></div>`;
+  $("tegels").innerHTML = tegel(t.duels, "gestemde duels") + tegel(t.toernooien, "toernooien gestart") + tegel(t.afgemaakt, "toernooien afgemaakt") + tegel(metStemmen, `van de ${TITEL.size} albums hebben stemmen`);
+  $("bijgewerkt").textContent = "Bijgewerkt: " + new Date(data.bijgewerkt).toLocaleString("nl-NL", {dateStyle:"medium", timeStyle:"short"});
+  const modusNaam = {"16":"supersnel","32":"snel","64":"lekker lang","alles":"alles"};
+  $("recent").innerHTML = data.recent.length ? data.recent.filter(r => TITEL.has(r.nr)).map(r =>
+    `<li style="text-decoration:none;color:var(--ink)"><b>${r.nr}</b>${esc(TITEL.get(r.nr))} <small style="color:var(--muted)">· ${r.deelnemers} albums (${modusNaam[r.modus] || r.modus}) · ${new Date(r.gemaakt).toLocaleDateString("nl-NL",{day:"numeric",month:"short"})}</small></li>`).join("")
+    : "<li>Nog geen afgemaakte toernooien.</li>";
+}
+async function laad(){
+  try{
+    if(location.protocol === "file:") throw new Error("lokaal");
+    const res = await fetch("/api/ranglijst");
+    if(!res.ok) throw new Error(res.status);
+    data = await res.json();
+    renderTegels(); render();
+  }catch(e){
+    $("rijen").innerHTML = `<tr><td colspan="6" class="rl-leeg">De ranglijst kon niet worden geladen. Probeer het over een paar minuten opnieuw.</td></tr>`;
+    $("recent").innerHTML = "<li>Niet beschikbaar.</li>";
+  }
+}
+for(const id of ["zoek","sorteer","minimum"]) $(id).addEventListener("input", render);
+laad();
+</script>
+</body>
+</html>

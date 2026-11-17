@@ -1,0 +1,10 @@
+{
+  "name": "suske-wiske-toernooi",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Onofficieel fanproject: kies je favoriete Suske en Wiske-album in een toernooi, met een community-ranglijst.",
+  "dependencies": {
+    "@netlify/database": "2.0.1"
+  }
+}

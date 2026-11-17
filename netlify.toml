@@ -1,0 +1,18 @@
+# Statische site in de hoofdmap, functies in netlify/functions,
+# databasemigraties in netlify/database/migrations (Netlify voert ze uit bij elke deploy).
+[build]
+  publish = "."
+  command = "echo 'Geen build nodig'"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Albumlijst en stijl kort cachen, zodat een bijgewerkte lijst snel bij iedereen is.
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=300"
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=300"

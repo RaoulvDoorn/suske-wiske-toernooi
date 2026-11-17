@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Het grote Suske en Wiske-toernooi</title>
+<meta name="description" content="Welk Suske en Wiske-album is jouw favoriet? Kies steeds tussen twee albums uit de rode reeks tot er één kampioen overblijft, en vergelijk je uitslag met de community.">
+<!-- Vervang JOUW-SITE door je eigen Netlify-adres (zie README), anders toont Reddit geen plaatje. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Het grote Suske en Wiske-toernooi">
+<meta property="og:description" content="Kies steeds tussen twee albums tot jouw favoriete Suske en Wiske overblijft. Wat wordt jouw kampioen?">
+<meta property="og:image" content="https://JOUW-SITE.netlify.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='10' fill='%23c4161c' stroke='%231d1a17' stroke-width='4'/%3E%3Cpath d='M32 13l5.6 11.4 12.6 1.8-9.1 8.9 2.1 12.5L32 41.7l-11.2 5.9 2.1-12.5-9.1-8.9 12.6-1.8z' fill='%23f2b630' stroke='%231d1a17' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Het grote <span>Suske en Wiske</span>-toernooi</h1>
+      <p class="sub" id="ondertitel">Kies steeds tussen twee albums uit de rode reeks tot er één favoriet overblijft.</p>
+    </div>
+    <div class="knoppen">
+      <a class="btn klein" href="ranglijst.html">🏆 Community-ranglijst</a>
+      <button class="btn klein" id="knop-fout" type="button">Fout gezien?</button>
+      <button class="btn klein" id="knop-nieuw" type="button" hidden>Nieuw toernooi</button>
+    </div>
+  </header>
+
+  <!-- OPZET -->
+  <section id="opzet" class="paneel" aria-labelledby="opzet-titel">
+    <fieldset class="modi">
+      <legend id="opzet-titel">1. Hoe lang wil je spelen?</legend>
+      <div class="modus-keuzes" id="modus-keuzes">
+        <label class="modus"><input type="radio" name="modus" id="modus-16" value="16"><strong>Supersnel</strong><span>16 willekeurige albums · 15 duels</span></label>
+        <label class="modus"><input type="radio" name="modus" id="modus-32" value="32" checked><strong>Snel</strong><span>32 willekeurige albums · 31 duels</span></label>
+        <label class="modus"><input type="radio" name="modus" id="modus-64" value="64"><strong>Lekker lang</strong><span>64 willekeurige albums · 63 duels</span></label>
+        <label class="modus"><input type="radio" name="modus" id="modus-alles" value="alles"><strong>Alles</strong><span id="modus-alles-tekst">Alle aangevinkte albums</span></label>
+      </div>
+    </fieldset>
+
+    <h2>2. Welke albums mogen meedoen?</h2>
+    <p class="uitleg">Vink albums uit die je niet kent. Bij Supersnel, Snel en Lekker lang wordt uit de aangevinkte albums een willekeurige groep getrokken. Kom je tijdens het spelen toch een onbekend album tegen? Druk dan op "Ken ik niet".</p>
+    <div class="filters">
+      <input type="search" id="zoek" placeholder="Zoek op titel of nummer…" aria-label="Zoek album">
+      <label for="van">nr.</label><input type="number" id="van" min="1" max="999" value="67" aria-label="Vanaf nummer">
+      <label for="tot">t/m</label><input type="number" id="tot" min="1" max="999" value="385" aria-label="Tot en met nummer">
+      <button class="btn klein" type="button" id="bereik-aan">Bereik aan</button>
+      <button class="btn klein" type="button" id="bereik-uit">Bereik uit</button>
+      <button class="btn klein" type="button" id="alles-aan">Alles aan</button>
+      <button class="btn klein" type="button" id="alles-uit">Alles uit</button>
+    </div>
+    <div class="albumlijst" id="albumlijst"></div>
+    <div class="status">
+      <span class="telling" id="telling"></span>
+      <div class="knoppen">
+        <button class="btn primair groot" id="start" type="button">Loten en beginnen</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RONDE-OVERGANG -->
+  <section id="overgang" class="paneel overgang" aria-labelledby="overgang-kop" hidden>
+    <ol class="ladder" id="ladder-overgang" aria-label="Verloop van het toernooi"></ol>
+    <div class="overgang-kop">
+      <p class="eyebrow" id="overgang-eyebrow"></p>
+      <h2 id="overgang-kop"></h2>
+      <p class="uitleg" id="overgang-tekst"></p>
+    </div>
+    <div class="tegels" id="overgang-tegels"></div>
+    <div class="volgende">
+      <div>
+        <small>Volgende ronde</small>
+        <strong id="volgende-naam"></strong>
+        <span id="volgende-info"></span>
+      </div>
+      <div class="knoppen">
+        <button class="btn" id="overgang-terug" type="button">↶ Laatste keuze ongedaan maken</button>
+        <button class="btn primair groot" id="overgang-start" type="button"></button>
+      </div>
+    </div>
+    <p class="stem-status" id="stem-status-overgang" role="status"></p>
+    <details class="afgevallen-ronde" id="overgang-details" hidden>
+      <summary id="overgang-summary"></summary>
+      <ul class="chips" id="overgang-uit"></ul>
+    </details>
+  </section>
+
+  <!-- DUEL -->
+  <section id="spel" class="paneel" aria-labelledby="ronde-naam" hidden>
+    <div class="status">
+      <span class="ronde-chip" id="ronde-naam">Ronde</span>
+      <div class="voortgang">
+        <span id="voortgang-tekst"></span>
+        <div class="balk" aria-hidden="true"><i id="balk"></i></div>
+      </div>
+    </div>
+    <ol class="ladder klein" id="ladder-spel" aria-label="Verloop van het toernooi"></ol>
+    <div class="duel">
+      <div class="kant">
+        <button class="album" id="kaart-a" type="button"></button>
+        <button class="btn klein kenniet" id="kenniet-a" type="button">Ken ik niet</button>
+      </div>
+      <div class="vs" aria-hidden="true">VS</div>
+      <div class="kant">
+        <button class="album" id="kaart-b" type="button"></button>
+        <button class="btn klein kenniet" id="kenniet-b" type="button">Ken ik niet</button>
+      </div>
+    </div>
+    <div class="onder-duel">
+      <button class="btn klein" id="ongedaan" type="button">↶ Vorige keuze ongedaan maken</button>
+      <button class="btn klein" id="veto" type="button">✋ Veto: geef ze andere tegenstanders</button>
+      <button class="btn klein" id="lot" type="button">Ken ik allebei niet (het lot beslist)</button>
+    </div>
+    <p class="melding" id="veto-melding" role="status" style="text-align:center"></p>
+    <p class="melding" style="text-align:center">Tip: kies met de pijltjestoetsen ← en →, gebruik V voor een veto en Backspace om ongedaan te maken. Keuzes bij "Ken ik niet" tellen niet mee in de community-ranglijst.</p>
+  </section>
+
+  <!-- EINDE -->
+  <section id="einde" class="paneel" aria-labelledby="einde-titel" hidden>
+    <h2 id="einde-titel">Jouw favoriete Suske en Wiske-album</h2>
+    <div class="winnaar-kaart">
+      <div class="album" id="kampioen-kaart" style="cursor:default;min-width:min(320px,100%)"></div>
+      <div class="podium" id="podium"></div>
+    </div>
+    <p class="stem-status" id="stem-status-einde" role="status"></p>
+    <div class="deel-preview">
+      <img id="deel-img" alt="Deelafbeelding met jouw top 8" hidden>
+      <div class="knoppen">
+        <button class="btn primair" id="deel-maak" type="button">Maak een deelafbeelding van je top 8</button>
+        <a class="btn" id="deel-download" download="mijn-suske-en-wiske-top8.png" hidden>Afbeelding opslaan</a>
+        <button class="btn" id="deel-delen" type="button" hidden>Delen…</button>
+        <button class="btn" id="kopieer" type="button">Kopieer de uitslag als tekst</button>
+        <a class="btn" href="ranglijst.html">Vergelijk met de community →</a>
+        <button class="btn" id="opnieuw" type="button">Nieuw toernooi (opnieuw loten)</button>
+      </div>
+    </div>
+    <p class="melding" id="kopieer-melding" role="status"></p>
+  </section>
+
+  <!-- OVERZICHT -->
+  <section id="overzicht" class="paneel" aria-labelledby="overzicht-titel" hidden>
+    <div class="status">
+      <h2 id="overzicht-titel">Overzicht: wie is door en wie is eruit?</h2>
+      <input type="search" id="ov-zoek" class="ov-zoek" placeholder="Zoek een album…" aria-label="Zoek in het overzicht">
+    </div>
+    <div class="ov-kolommen">
+      <div class="ov-kolom">
+        <h3><span class="stip open"></span>Nog te spelen <span class="aantal" id="ov-n-open"></span></h3>
+        <ul id="ov-open"></ul>
+      </div>
+      <div class="ov-kolom">
+        <h3><span class="stip door"></span>Door naar de volgende ronde <span class="aantal" id="ov-n-door"></span></h3>
+        <ul id="ov-door"></ul>
+      </div>
+      <div class="ov-kolom">
+        <h3><span class="stip uit"></span>Afgevallen <span class="aantal" id="ov-n-uit"></span></h3>
+        <ul id="ov-uit"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCHEMA -->
+  <section class="paneel" aria-labelledby="schema-titel">
+    <div class="schema-kop">
+      <h2 id="schema-titel" class="naamlijn">De laatste 16</h2>
+      <p class="melding" id="schema-uitleg"></p>
+    </div>
+    <div class="schema-scroll">
+      <div class="bracket" id="bracket"></div>
+    </div>
+    <div class="kampioen">
+      <svg class="medaille" viewBox="0 0 44 58" aria-hidden="true"><path d="M6 2h12l6 14-8 6z" fill="#4f9ee0"/><path d="M38 2H26l-6 14 8 6z" fill="#3b82c4"/><circle cx="22" cy="38" r="16" fill="#f2b630" stroke="#d48a0c" stroke-width="3"/><circle cx="22" cy="38" r="10" fill="#ffd98a"/></svg>
+      <div class="vak">
+        <div class="naam" id="kampioen-naam"></div>
+        <div class="label">Kampioen</div>
+      </div>
+      <svg class="medaille" viewBox="0 0 44 58" aria-hidden="true"><path d="M6 2h12l6 14-8 6z" fill="#4f9ee0"/><path d="M38 2H26l-6 14 8 6z" fill="#3b82c4"/><circle cx="22" cy="38" r="16" fill="#f2b630" stroke="#d48a0c" stroke-width="3"/><circle cx="22" cy="38" r="10" fill="#ffd98a"/></svg>
+    </div>
+  </section>
+
+  <footer class="voet">
+    <p><strong>Onofficieel fanproject.</strong> Suske en Wiske is gemaakt door Willy Vandersteen; alle rechten liggen bij Standaard Uitgeverij. Deze site is daar niet mee verbonden en gebruikt alleen albumnummers en titels.</p>
+    <p>Je keuzes worden anoniem opgeslagen voor de community-ranglijst: welk album won van welk album, zonder naam, account of IP-adres. Je voortgang staat alleen in je eigen browser.</p>
+    <p id="lijst-stand"></p>
+  </footer>
+</div>
+
+<!-- Bevestigen nieuw toernooi -->
+<div class="dialoog-achter" id="dialoog" role="dialog" aria-modal="true" aria-labelledby="dialoog-tekst">
+  <div class="dialoog">
+    <p id="dialoog-tekst">Weet je het zeker? Je huidige toernooi gaat verloren.</p>
+    <div class="knoppen">
+      <button class="btn primair" id="dialoog-ja" type="button">Ja, nieuw toernooi</button>
+      <button class="btn" id="dialoog-nee" type="button">Nee, doorgaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fout melden (Netlify Forms) -->
+<div class="dialoog-achter" id="fout" role="dialog" aria-modal="true" aria-labelledby="fout-titel">
+  <div class="dialoog">
+    <h2 id="fout-titel">Fout gezien in de lijst?</h2>
+    <p class="melding">Een verkeerde titel, een ontbrekend album of een dubbele? Laat het weten, dan wordt de lijst verbeterd.</p>
+    <form class="fout-form" id="fout-form" name="fout-melden" method="POST" data-netlify="true" netlify-honeypot="bot-veld">
+      <input type="hidden" name="form-name" value="fout-melden">
+      <p class="verborgen"><label>Niet invullen: <input name="bot-veld"></label></p>
+      <label for="fout-album">Albumnummer of titel<input type="text" id="fout-album" name="album" maxlength="100" placeholder="Bijv. 344"></label>
+      <label for="fout-bericht">Wat klopt er niet?<textarea id="fout-bericht" name="bericht" maxlength="1000" required></textarea></label>
+      <div class="knoppen">
+        <button class="btn primair" type="submit">Versturen</button>
+        <button class="btn" id="fout-sluit" type="button">Sluiten</button>
+      </div>
+      <p class="melding" id="fout-melding" role="status"></p>
+    </form>
+  </div>
+</div>
+
+<script src="albums.js"></script>
+<script>
+"use strict";
+/* ---------- Albums ---------- */
+const ALBUMS = (window.SW_ALBUMS || []).slice().sort((a,b) => a[0]-b[0]);
+const TITEL = new Map(ALBUMS);
+const OPSLAG = "swt-staat-v1", OPSLAG_VERZONDEN = "swt-verzonden-v1", OPSLAG_LAATSTE = "swt-laatste-v1";
+const API_STEMMEN = "/api/stemmen";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const lbl = id => "#"+id+" "+TITEL.get(id);
+
+$("ondertitel").textContent = `Kies steeds tussen twee van de ${ALBUMS.length} albums uit de rode reeks (nr. ${ALBUMS[0][0]} t/m ${ALBUMS[ALBUMS.length-1][0]}) tot er één favoriet overblijft.`;
+$("lijst-stand").textContent = "Albumlijst " + (window.SW_LIJST_STAND || "") + ". Nr. 1 t/m 66 verschenen in zwart-wit en zitten in kleur in de reeks vanaf nr. 67, dus elk verhaal doet één keer mee.";
+
+/* ---------- Toestand ---------- */
+let geselecteerd = new Set(ALBUMS.map(a => a[0]));
+let modus = "32";
+let toernooi = null;   // {id, modus, totaal, rondes:[{voorronde, duels:[{a,b,w,n,t}]}], pauze, stap, vermijd, vetos}
+let historie = [];
+let verzonden = new Set();
+
+function bewaar(){
+  try{ localStorage.setItem(OPSLAG, JSON.stringify({sel:[...geselecteerd], modus, toernooi, historie:historie.slice(-40)})); }catch(e){}
+}
+function bewaarVerzonden(){ try{ localStorage.setItem(OPSLAG_VERZONDEN, JSON.stringify([...verzonden])); }catch(e){} }
+function laad(){
+  try{
+    const d = JSON.parse(localStorage.getItem(OPSLAG) || "null");
+    if(d){
+      if(Array.isArray(d.sel)) geselecteerd = new Set(d.sel.filter(n => TITEL.has(n)));
+      if(["16","32","64","alles"].includes(d.modus)) modus = d.modus;
+      if(d.toernooi && Array.isArray(d.toernooi.rondes)) toernooi = d.toernooi;
+      if(Array.isArray(d.historie)) historie = d.historie;
+    }
+    verzonden = new Set(JSON.parse(localStorage.getItem(OPSLAG_VERZONDEN) || "[]"));
+  }catch(e){}
+  // Een opgeslagen toernooi met een album dat niet meer in de lijst staat kan niet verder.
+  if(toernooi && toernooi.rondes.some(r => r.duels.some(d => !TITEL.has(d.a) || (d.b !== null && !TITEL.has(d.b))))){ toernooi = null; historie = []; }
+}
+
+/* ---------- Willekeur ---------- */
+function rnd(n){
+  try{ const u = new Uint32Array(1); crypto.getRandomValues(u); return u[0] % n; }catch(e){ return Math.floor(Math.random()*n); }
+}
+function schud(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=rnd(i+1); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function nieuwId(){
+  try{ return crypto.randomUUID(); }catch(e){ return "t-"+Date.now().toString(36)+"-"+rnd(1e9).toString(36); }
+}
+
+/* ---------- Toernooi-logica ---------- */
+function maakToernooi(ids, m){
+  let veld = schud(ids);
+  if(m !== "alles" && veld.length > Number(m)) veld = veld.slice(0, Number(m));
+  const n = veld.length;
+  let P = 1; while(P*2 <= n) P *= 2;
+  const k = n - P; // aantal voorrondeduels
+  const rondes = [];
+  if(k > 0){
+    const vakken = [];
+    for(let i=0;i<k;i++) vakken.push({a:veld[2*i], b:veld[2*i+1], w:null});
+    for(let i=2*k;i<n;i++) vakken.push({a:veld[i], b:null, w:veld[i]});
+    rondes.push({voorronde:true, duels:schud(vakken)});
+  } else {
+    rondes.push({voorronde:false, duels:paar(veld)});
+  }
+  return {id:nieuwId(), modus:m, totaal:n, rondes, pauze:true, stap:0};
+}
+function paar(veld){
+  const d = [];
+  for(let i=0;i<veld.length;i+=2) d.push({a:veld[i], b:veld[i+1], w:null});
+  return d;
+}
+function huidigeRonde(){ return toernooi.rondes[toernooi.rondes.length-1]; }
+function openDuels(){ return huidigeRonde().duels.filter(d => d.w === null && d.b !== null); }
+function volgendDuel(){
+  const open = openDuels();
+  const mijd = toernooi.vermijd || [];
+  return open.find(d => !mijd.includes(d.a) && !mijd.includes(d.b)) || open[0] || null;
+}
+function kampioen(){
+  const r = huidigeRonde();
+  if(r.duels.length === 1 && r.duels[0].b !== null && r.duels[0].w !== null) return r.duels[0].w;
+  return null;
+}
+function rondeAfronden(){
+  const r = huidigeRonde();
+  if(r.duels.some(d => d.w === null)) return;
+  const winnaars = r.duels.map(d => d.w);
+  if(winnaars.length === 1) return;
+  toernooi.rondes.push({voorronde:false, duels:paar(winnaars)});
+  toernooi.pauze = true;
+}
+function momentopname(){
+  historie.push(JSON.stringify(toernooi));
+  if(historie.length > 40) historie.shift();
+}
+/* telt=false: "Ken ik niet" of het lot; zo'n duel gaat niet naar de community-ranglijst */
+function kies(id, telt = true){
+  if(!toernooi || toernooi.pauze) return;
+  const d = volgendDuel();
+  if(!d || (id !== d.a && id !== d.b)) return;
+  momentopname();
+  d.w = id;
+  if(!telt) d.n = true;
+  toernooi.stap = (toernooi.stap || 0) + 1;
+  d.t = toernooi.stap;
+  toernooi.vermijd = null;
+  $("veto-melding").textContent = "";
+  rondeAfronden();
+  const kamp = kampioen();
+  if(kamp){ try{ localStorage.setItem(OPSLAG_LAATSTE, String(kamp)); }catch(e){} }
+  bewaar();
+  render();
+  if(kamp) verstuurStemmen();
+}
+function ongedaan(){
+  if(!historie.length) return;
+  toernooi = JSON.parse(historie.pop());
+  bewaar();
+  render();
+}
+function vetoMogelijk(){ return openDuels().length >= 2; }
+function veto(){
+  if(!toernooi || toernooi.pauze) return;
+  const d = volgendDuel(); if(!d || !vetoMogelijk()) return;
+  momentopname();
+  const anderen = schud(openDuels().filter(x => x !== d));
+  const kant = () => rnd(2) ? "a" : "b";
+  const [a, b] = [d.a, d.b];
+  if(anderen.length >= 2){
+    const e1 = anderen[0], e2 = anderen[1], k1 = kant(), k2 = kant();
+    const x1 = e1[k1], x2 = e2[k2];
+    e1[k1] = a; e2[k2] = b;
+    d.a = x1; d.b = x2;
+  } else {
+    const e = anderen[0], k = kant();
+    const x = e[k]; e[k] = b; d.b = x;
+  }
+  toernooi.vermijd = [a, b];
+  toernooi.vetos = (toernooi.vetos || 0) + 1;
+  bewaar(); render();
+  $("veto-melding").textContent = `Veto! #${a} en #${b} hoeven elkaar niet meer te treffen en zijn opnieuw ingeloot.`;
+}
+
+/* ---------- Namen en tellingen ---------- */
+function veldNaam(veld){ return ({2:"Finale",4:"Halve finale",8:"Kwartfinale",16:"Achtste finale"})[veld] || ("Ronde van "+veld); }
+function rondeNaam(r){ return r.voorronde ? "Voorronde" : veldNaam(r.duels.length*2); }
+function gespeeld(){
+  let s = 0;
+  for(const r of toernooi.rondes) for(const d of r.duels) if(d.b !== null && d.w !== null) s++;
+  return s;
+}
+
+/* ---------- Stemmen naar de community-ranglijst ---------- */
+function stemSleutel(ri, d){ return `${toernooi.id}:${ri}:${d.a}:${d.b}`; }
+/* metHuidige=false: alleen afgeronde rondes (die kun je niet meer ongedaan maken via het duelscherm) */
+function openStemmen(metHuidige = false){
+  const lijst = [];
+  const laatste = toernooi.rondes.length - 1;
+  const huidigeMag = metHuidige || !!kampioen() || toernooi.pauze;
+  toernooi.rondes.forEach((r, ri) => {
+    if(ri === laatste && !huidigeMag) return;
+    const veld = r.voorronde ? toernooi.totaal : r.duels.length*2;
+    for(const d of r.duels){
+      if(d.b === null || d.w === null || d.n) continue;
+      const k = stemSleutel(ri, d);
+      if(verzonden.has(k)) continue;
+      lijst.push({k, w:d.w, l: d.w === d.a ? d.b : d.a, veld});
+    }
+  });
+  return lijst;
+}
+let bezigMetVersturen = false;
+async function verstuurStemmen(){
+  if(!toernooi || bezigMetVersturen || location.protocol === "file:") return;
+  bezigMetVersturen = true;
+  try{
+    const kamp = kampioen();
+    const kampSleutel = toernooi.id + ":kampioen";
+    let stemmen = openStemmen();
+    let kampioenSturen = !!kamp && !verzonden.has(kampSleutel);
+    while(stemmen.length || kampioenSturen){
+      const brok = stemmen.slice(0, 64);
+      const laatste = stemmen.length <= 64;
+      const body = {sessie:toernooi.id, modus:toernooi.modus, deelnemers:toernooi.totaal, duels:brok.map(({w,l,veld}) => ({w,l,veld}))};
+      if(laatste && kampioenSturen) body.kampioen = kamp;
+      const res = await fetch(API_STEMMEN, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body), keepalive:true});
+      if(!res.ok) throw new Error("status "+res.status);
+      brok.forEach(s => verzonden.add(s.k));
+      if(laatste && kampioenSturen){ verzonden.add(kampSleutel); kampioenSturen = false; }
+      bewaarVerzonden();
+      stemmen = stemmen.slice(64);
+    }
+    toonStemStatus(true);
+  }catch(e){
+    toonStemStatus(false);
+  }finally{
+    bezigMetVersturen = false;
+  }
+}
+function telVerzonden(){ return toernooi ? [...verzonden].filter(k => k.startsWith(toernooi.id+":") && !k.endsWith(":kampioen")).length : 0; }
+function toonStemStatus(ok){
+  const n = telVerzonden();
+  const tekst = ok ? (n ? `✓ ${n} van je keuzes tellen anoniem mee in de community-ranglijst.` : "")
+    : "Je keuzes konden nog niet naar de community-ranglijst. Ze worden later opnieuw verstuurd.";
+  for(const id of ["stem-status-overgang","stem-status-einde"]){
+    $(id).textContent = tekst;
+    $(id).classList.toggle("ok", ok);
+  }
+}
+/* Bij het verlaten van de pagina: open stemmen meegeven (kan niet ongedaan worden gemaakt, dus alleen gespeelde duels) */
+function stuurBijVertrek(){
+  if(!toernooi || location.protocol === "file:" || !navigator.sendBeacon) return;
+  const stemmen = openStemmen(true).slice(0, 64);
+  if(!stemmen.length) return;
+  const body = {sessie:toernooi.id, modus:toernooi.modus, deelnemers:toernooi.totaal, duels:stemmen.map(({w,l,veld}) => ({w,l,veld}))};
+  const ok = navigator.sendBeacon(API_STEMMEN, new Blob([JSON.stringify(body)], {type:"application/json"}));
+  if(ok){ stemmen.forEach(s => verzonden.add(s.k)); bewaarVerzonden(); }
+}
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden") stuurBijVertrek(); });
+window.addEventListener("pagehide", stuurBijVertrek);
+
+/* ---------- Opzet-scherm ---------- */
+function renderLijst(){
+  const q = $("zoek").value.trim().toLowerCase();
+  const html = [];
+  for(const [nr,t] of ALBUMS){
+    if(q && !(t.toLowerCase().includes(q) || String(nr).includes(q))) continue;
+    const aan = geselecteerd.has(nr);
+    html.push(`<label class="${aan?"":"uit"}"><input type="checkbox" id="a${nr}" data-nr="${nr}" ${aan?"checked":""}><span class="nr">${nr}</span><span>${esc(t)}</span></label>`);
+  }
+  $("albumlijst").innerHTML = html.join("") || '<p class="melding">Geen album gevonden met die zoekterm.</p>';
+  renderTelling();
+}
+function deelnemers(){ const n = geselecteerd.size; return modus === "alles" ? n : Math.min(n, Number(modus)); }
+function renderTelling(){
+  const n = geselecteerd.size, d = deelnemers();
+  $("modus-alles-tekst").textContent = `Alle ${n} aangevinkte albums · ${Math.max(n-1,0)} duels`;
+  for(const m of ["16","32","64"]){
+    const el = $("modus-"+m);
+    el.checked = modus === m;
+  }
+  $("modus-alles").checked = modus === "alles";
+  if(n < 2){ $("telling").textContent = `${n} album aangevinkt: kies er minstens 2.`; }
+  else if(d < Number(modus)){ $("telling").textContent = `Je hebt ${n} albums aangevinkt, dus ze doen allemaal mee · ${d-1} duels`; }
+  else { $("telling").textContent = `${d} albums doen mee${d < n ? ` (willekeurig getrokken uit ${n})` : ""} · ${d-1} duels tot de kampioen`; }
+  $("start").disabled = n < 2;
+}
+$("modus-keuzes").addEventListener("change", e => { if(e.target.name === "modus"){ modus = e.target.value; renderTelling(); bewaar(); } });
+$("albumlijst").addEventListener("change", e => {
+  const nr = Number(e.target.dataset.nr);
+  if(!nr) return;
+  if(e.target.checked) geselecteerd.add(nr); else geselecteerd.delete(nr);
+  e.target.closest("label").classList.toggle("uit", !e.target.checked);
+  renderTelling(); bewaar();
+});
+$("zoek").addEventListener("input", renderLijst);
+function bereik(aan){
+  const v = Number($("van").value)||0, t = Number($("tot").value)||9999;
+  const lo = Math.min(v,t), hi = Math.max(v,t);
+  for(const [nr] of ALBUMS) if(nr>=lo && nr<=hi){ aan ? geselecteerd.add(nr) : geselecteerd.delete(nr); }
+  renderLijst(); bewaar();
+}
+$("bereik-aan").onclick = () => bereik(true);
+$("bereik-uit").onclick = () => bereik(false);
+$("alles-aan").onclick = () => { geselecteerd = new Set(ALBUMS.map(a=>a[0])); renderLijst(); bewaar(); };
+$("alles-uit").onclick = () => { geselecteerd.clear(); renderLijst(); bewaar(); };
+$("start").onclick = () => {
+  if(geselecteerd.size < 2) return;
+  toernooi = maakToernooi([...geselecteerd], modus);
+  historie = [];
+  bewaar(); render();
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+
+/* ---------- Duel ---------- */
+function vulKaart(el, id, toets){
+  el.dataset.id = id;
+  el.innerHTML = `<div class="kop"><span>Suske en Wiske · rode reeks</span><span class="badge">${id}</span></div>
+    <div class="titel">${esc(TITEL.get(id))}</div>
+    ${toets ? `<div class="toets">${toets}</div>` : ""}`;
+  el.setAttribute("aria-label", `Kies ${TITEL.get(id)}, album ${id}`);
+}
+$("kaart-a").onclick = e => kies(Number(e.currentTarget.dataset.id));
+$("kaart-b").onclick = e => kies(Number(e.currentTarget.dataset.id));
+/* "Ken ik niet" bij album A betekent: B gaat door, zonder stem */
+$("kenniet-a").onclick = () => { const d = volgendDuel(); if(d) kies(d.b, false); };
+$("kenniet-b").onclick = () => { const d = volgendDuel(); if(d) kies(d.a, false); };
+$("ongedaan").onclick = ongedaan;
+$("veto").onclick = veto;
+$("lot").onclick = () => { const d = volgendDuel(); if(d) kies(rnd(2) ? d.a : d.b, false); };
+
+function dialoogOpen(){ return document.querySelector(".dialoog-achter.open") !== null; }
+document.addEventListener("keydown", e => {
+  if(dialoogOpen() || e.target.matches("input, textarea, select")) return;
+  if(toernooi && toernooi.pauze && !$("overgang").hidden){
+    if(e.key === "Enter" && !e.target.matches("button, summary, a")){ e.preventDefault(); startRonde(); }
+    else if(e.key === "Backspace"){ e.preventDefault(); ongedaan(); }
+    return;
+  }
+  if(!toernooi || $("spel").hidden) return;
+  const d = volgendDuel(); if(!d) return;
+  if(e.key === "ArrowLeft"){ e.preventDefault(); kies(d.a); }
+  else if(e.key === "ArrowRight"){ e.preventDefault(); kies(d.b); }
+  else if(e.key === "Backspace"){ e.preventDefault(); ongedaan(); }
+  else if(e.key === "v" || e.key === "V"){ e.preventDefault(); veto(); }
+});
+
+/* ---------- Schema laatste 16 ---------- */
+const X = {r16:[0,165], kf:[165,290], hf:[290,405], f:[405,488]};
+function yR16(i){ return [40+150*i, 120+150*i]; }
+function bouwSchema(){
+  const lijnen = [];
+  const L = (x1,y1,x2,y2) => lijnen.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`);
+  for(const kant of [0,1]){
+    const fx = x => kant ? 1000-x : x;
+    for(let i=0;i<4;i++){
+      const [ya,yb] = yR16(i);
+      L(fx(X.r16[0]),ya,fx(X.r16[1]),ya); L(fx(X.r16[0]),yb,fx(X.r16[1]),yb);
+      L(fx(X.r16[1]),ya,fx(X.r16[1]),yb);
+      const ym = (ya+yb)/2; L(fx(X.kf[0]),ym,fx(X.kf[1]),ym);
+    }
+    for(let j=0;j<2;j++){
+      const ya = 80+300*j, yb = 230+300*j;
+      L(fx(X.kf[1]),ya,fx(X.kf[1]),yb);
+      L(fx(X.hf[0]),(ya+yb)/2,fx(X.hf[1]),(ya+yb)/2);
+    }
+    L(fx(X.hf[1]),155,fx(X.hf[1]),455);
+    L(fx(X.f[0]),305,fx(X.f[1]),305);
+  }
+  return `<svg viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">${lijnen.join("")}</svg>`;
+}
+const SCHEMA_SVG = bouwSchema();
+function slotHTML(id, x1, x2, y, rechts, cls){
+  if(id == null) return "";
+  const left = (rechts ? 1000-x2 : x1)/10, w = (x2-x1)/10, top = y/620*100;
+  return `<div class="slot ${rechts?"rechts":""} ${cls}" style="left:${left}%;width:${w}%;top:${top}%" title="${esc(lbl(id))}"><b>${id}</b>${esc(TITEL.get(id))}</div>`;
+}
+function zoekRonde(veld){
+  if(!toernooi) return null;
+  return toernooi.rondes.find(r => !r.voorronde && r.duels.length*2 === veld) || null;
+}
+function klasse(d, id, actief){
+  if(d.w === null) return d === actief ? "bezig" : "";
+  return d.w === id ? "winnaar" : "verliezer";
+}
+function renderSchema(){
+  const r16 = zoekRonde(16), kf = zoekRonde(8), hf = zoekRonde(4), fi = zoekRonde(2);
+  const actief = toernooi && !kampioen() && !toernooi.pauze ? volgendDuel() : null;
+  let slots = "";
+  if(r16){
+    r16.duels.forEach((d,i) => {
+      const rechts = i >= 4, k = i % 4, [ya,yb] = yR16(k);
+      slots += slotHTML(d.a, ...X.r16, ya, rechts, klasse(d,d.a,actief));
+      slots += slotHTML(d.b, ...X.r16, yb, rechts, klasse(d,d.b,actief));
+    });
+  }
+  if(kf){
+    kf.duels.forEach((d,i) => {
+      const rechts = i >= 2, k = i % 2;
+      slots += slotHTML(d.a, ...X.kf, 80+300*k, rechts, klasse(d,d.a,actief));
+      slots += slotHTML(d.b, ...X.kf, 230+300*k, rechts, klasse(d,d.b,actief));
+    });
+  }
+  if(hf){
+    hf.duels.forEach((d,i) => {
+      const rechts = i === 1;
+      slots += slotHTML(d.a, ...X.hf, 155, rechts, klasse(d,d.a,actief));
+      slots += slotHTML(d.b, ...X.hf, 455, rechts, klasse(d,d.b,actief));
+    });
+  }
+  if(fi){
+    const d = fi.duels[0];
+    slots += slotHTML(d.a, ...X.f, 305, false, klasse(d,d.a,actief));
+    slots += slotHTML(d.b, ...X.f, 305, true, klasse(d,d.b,actief));
+  }
+  let note = "";
+  if(!r16){
+    const tekst = !toernooi ? "Kies hierboven hoe lang je wilt spelen. Zodra er nog 16 albums over zijn, vult dit schema zich."
+      : (toernooi.totaal < 16 ? "Er doen minder dan 16 albums mee, dus dit schema blijft leeg. De kampioen verschijnt hieronder."
+      : "Dit schema vult zich zodra er nog 16 albums over zijn.");
+    note = `<div class="leeg-note">${tekst}</div>`;
+  }
+  $("bracket").innerHTML = SCHEMA_SVG + slots + note;
+  const kamp = toernooi ? kampioen() : null;
+  $("kampioen-naam").textContent = kamp ? lbl(kamp) : "";
+  $("schema-uitleg").textContent = r16 ? "Links en rechts spelen de albums naar de finale in het midden." : "";
+}
+
+/* ---------- Rondeplan en tussenscherm ---------- */
+function rondePlan(){
+  const plan = [];
+  if(toernooi.rondes[0].voorronde) plan.push("Voorronde");
+  let veld = toernooi.rondes[0].voorronde ? toernooi.rondes[0].duels.length : toernooi.rondes[0].duels.length*2;
+  while(veld >= 2){ plan.push(veldNaam(veld)); veld /= 2; }
+  return plan;
+}
+function renderLadder(id){
+  const cur = toernooi.rondes.length - 1;
+  $(id).innerHTML = rondePlan().map((naam,i) => `<li class="${i < cur ? "klaar" : i === cur ? "nu" : ""}"${i === cur ? ' aria-current="step"' : ""}>${naam}</li>`).join("");
+}
+function tegel(getal, tekst, cls){ return `<div class="tegel ${cls||""}"><strong>${getal}</strong><span>${tekst}</span></div>`; }
+function renderOvergang(){
+  const R = toernooi.rondes, nu = R[R.length-1], naam = rondeNaam(nu);
+  const duels = nu.duels.filter(d => d.b !== null).length;
+  const veldNu = duels*2 + nu.duels.filter(d => d.b === null).length;
+  const nogDuels = toernooi.totaal - 1 - gespeeld();
+  renderLadder("ladder-overgang");
+  if(R.length === 1){
+    $("overgang-eyebrow").textContent = "Het toernooi begint";
+    $("overgang-kop").textContent = "De loting is klaar!";
+    if(nu.voorronde){
+      const vrij = nu.duels.filter(d => d.b === null).length;
+      $("overgang-tekst").textContent = `${toernooi.totaal} albums zijn willekeurig geloot. Omdat dat geen macht van twee is, spelen ${duels*2} albums eerst een voorronde. De andere ${vrij} albums zijn vrijgeloot en staan al in de ${veldNaam(nu.duels.length).toLowerCase()}.`;
+      $("overgang-tegels").innerHTML = tegel(toernooi.totaal,"albums doen mee") + tegel(duels*2,"spelen de voorronde") + tegel(vrij,"vrijgeloot","door") + tegel(toernooi.totaal-1,"duels tot de kampioen");
+    } else {
+      $("overgang-tekst").textContent = `${toernooi.totaal} albums zijn willekeurig geloot en beginnen meteen in de ${naam.toLowerCase()}.`;
+      $("overgang-tegels").innerHTML = tegel(toernooi.totaal,"albums doen mee") + tegel(toernooi.totaal-1,"duels tot de kampioen");
+    }
+    $("overgang-details").hidden = true;
+  } else {
+    const vorige = R[R.length-2], vnaam = rondeNaam(vorige);
+    const uit = vorige.duels.filter(d => d.b !== null).map(d => d.w === d.a ? d.b : d.a).sort((a,b)=>a-b);
+    const totaalUit = toernooi.totaal - veldNu;
+    $("overgang-eyebrow").textContent = `Ronde ${R.length-1} van ${rondePlan().length} gespeeld`;
+    $("overgang-kop").textContent = `${vnaam} afgelopen!`;
+    $("overgang-tekst").textContent = veldNu === 2 ? "Nog twee albums over. Hierna weet je wat je favoriete Suske en Wiske is."
+      : veldNu === 16 ? "Nog 16 albums over. Vanaf nu vult het schema van de laatste 16 zich onderaan de pagina."
+      : `${veldNu} albums gaan door naar de ${naam.toLowerCase()}.`;
+    $("overgang-tegels").innerHTML = tegel(veldNu,"albums nog in de race","door") + tegel(uit.length,`afgevallen in de ${vnaam.toLowerCase()}`,"uit") + tegel(totaalUit,"in totaal afgevallen","uit") + tegel(nogDuels,"duels te gaan");
+    $("overgang-summary").textContent = `Bekijk de ${uit.length} albums die in de ${vnaam.toLowerCase()} zijn afgevallen`;
+    $("overgang-uit").innerHTML = uit.map(id => `<li><b>${id}</b>${esc(TITEL.get(id))}</li>`).join("");
+    $("overgang-details").hidden = false;
+  }
+  $("volgende-naam").textContent = naam;
+  $("volgende-info").textContent = veldNu === 2 ? "1 duel: de finale" : `${veldNu} albums · ${duels} duels`;
+  $("overgang-start").textContent = `Start de ${naam.toLowerCase()} →`;
+  $("overgang-terug").disabled = historie.length === 0;
+}
+function startRonde(){
+  if(!toernooi || !toernooi.pauze) return;
+  toernooi.pauze = false;
+  bewaar(); render();
+  $("spel").scrollIntoView({behavior:"smooth", block:"start"});
+  verstuurStemmen(); // de vorige ronde is nu definitief
+}
+$("overgang-start").onclick = startRonde;
+$("overgang-terug").onclick = ongedaan;
+
+/* ---------- Overzicht ---------- */
+function renderOverzicht(){
+  const q = $("ov-zoek").value.trim().toLowerCase();
+  const past = id => !q || TITEL.get(id).toLowerCase().includes(q) || String(id).includes(q);
+  const item = (id, sub) => `<li><span><b>${id}</b>${esc(TITEL.get(id))}</span><small>${esc(sub)}</small></li>`;
+  const r = huidigeRonde(), naam = rondeNaam(r), kamp = kampioen();
+  const open = [], door = [], uit = [];
+  if(kamp){
+    door.push([kamp, "Kampioen!"]);
+  } else {
+    for(const d of r.duels){
+      if(d.w === null){ open.push([d.a, `${naam} · tegen #${d.b} ${TITEL.get(d.b)}`]); open.push([d.b, `${naam} · tegen #${d.a} ${TITEL.get(d.a)}`]); }
+      else if(d.b === null) door.push([d.a, `${naam} · vrijgeloot`]);
+      else { const v = d.w === d.a ? d.b : d.a; door.push([d.w, `${naam} · ${d.n ? "door zonder stem tegen" : "won van"} #${v} ${TITEL.get(v)}`]); }
+    }
+  }
+  const verl = [];
+  for(const ronde of toernooi.rondes){
+    const rn = rondeNaam(ronde);
+    for(const d of ronde.duels){
+      if(d.w === null || d.b === null) continue;
+      const v = d.w === d.a ? d.b : d.a;
+      verl.push({id:v, t:d.t || 0, sub:`${rn} · ${d.n ? "ken ik niet / lot, tegen" : "verloor van"} #${d.w} ${TITEL.get(d.w)}`});
+    }
+  }
+  verl.sort((x,y) => y.t - x.t);
+  for(const v of verl) uit.push([v.id, v.sub]);
+  open.sort((x,y) => x[0]-y[0]); door.sort((x,y) => x[0]-y[0]);
+  const vul = (lijst, ul, teller) => {
+    const zicht = lijst.filter(([id]) => past(id));
+    $(teller).textContent = lijst.length;
+    $(ul).innerHTML = zicht.length ? zicht.map(([id,s]) => item(id,s)).join("") : `<li class="leeg">${q ? "Geen treffers" : "Nog niemand"}</li>`;
+  };
+  vul(open, "ov-open", "ov-n-open");
+  vul(door, "ov-door", "ov-n-door");
+  vul(uit, "ov-uit", "ov-n-uit");
+}
+$("ov-zoek").addEventListener("input", () => { if(toernooi) renderOverzicht(); });
+
+/* ---------- Eindscherm ---------- */
+function verliezersVan(veld){
+  const r = zoekRonde(veld); if(!r) return [];
+  return r.duels.filter(d => d.w !== null && d.b !== null).map(d => d.w === d.a ? d.b : d.a);
+}
+function renderEinde(kamp){
+  const k = $("kampioen-kaart");
+  vulKaart(k, kamp, "");
+  k.removeAttribute("aria-label");
+  const blok = (titel, ids) => ids.length ? `<div><small>${titel}</small>${ids.map(i=>esc(lbl(i))).join("<br>")}</div>` : "";
+  $("podium").innerHTML = blok("Finalist", verliezersVan(2)) + blok("Halve finale", verliezersVan(4)) + blok("Kwartfinale", verliezersVan(8));
+}
+function uitslagTekst(){
+  const kamp = kampioen();
+  const regels = [`Mijn Suske en Wiske-toernooi (${toernooi.totaal} albums)`, "Kampioen: "+lbl(kamp)];
+  const t = verliezersVan(2), h = verliezersVan(4), q = verliezersVan(8);
+  if(t.length) regels.push("Finalist: "+t.map(lbl).join(", "));
+  if(h.length) regels.push("Halve finale: "+h.map(lbl).join(", "));
+  if(q.length) regels.push("Kwartfinale: "+q.map(lbl).join(", "));
+  regels.push("Speel zelf: " + location.origin + location.pathname.replace(/index\.html$/,""));
+  return regels.join("\n");
+}
+$("kopieer").onclick = async () => {
+  if(!kampioen()) return;
+  try{ await navigator.clipboard.writeText(uitslagTekst()); $("kopieer-melding").textContent = "Uitslag gekopieerd."; }
+  catch(e){ $("kopieer-melding").textContent = "Kopiëren lukte niet. Probeer het met de deelafbeelding."; }
+};
+
+/* Deelafbeelding (1080x1350, staand formaat voor Reddit en Instagram) */
+function regelsVoor(ctx, tekst, max){
+  const woorden = tekst.split(" "), regels = []; let r = "";
+  for(const w of woorden){ const p = r ? r+" "+w : w; if(ctx.measureText(p).width > max && r){ regels.push(r); r = w; } else r = p; }
+  if(r) regels.push(r);
+  return regels;
+}
+async function maakDeelbeeld(){
+  const kamp = kampioen(); if(!kamp) return null;
+  try{ await Promise.all([document.fonts.load('60px "Lilita One"'), document.fonts.load('800 30px "Nunito Sans"'), document.fonts.load('600 30px "Nunito Sans"')]); }catch(e){}
+  const W = 1080, H = 1350, c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const x = c.getContext("2d");
+  const D = '"Lilita One", "Arial Black", sans-serif', B = '"Nunito Sans", Arial, sans-serif';
+  x.fillStyle = "#f4efe4"; x.fillRect(0,0,W,H);
+  x.fillStyle = "rgba(196,22,28,.08)";
+  for(let i=6;i<W;i+=14) for(let j=6;j<H;j+=14){ x.beginPath(); x.arc(i,j,1.6,0,7); x.fill(); }
+  x.fillStyle = "#1d1a17"; x.font = `64px ${D}`; x.textBaseline = "top";
+  x.fillText("Mijn Suske en Wiske-top", 60, 56);
+  x.fillStyle = "#c4161c"; x.fillText("8", 60 + x.measureText("Mijn Suske en Wiske-top ").width, 56);
+  x.fillStyle = "#6f665c"; x.font = `600 28px ${B}`;
+  x.fillText(`Uit ${toernooi.totaal} albums van de rode reeks · ${toernooi.totaal-1} duels`, 62, 136);
+  x.fillStyle = "#1d1a17"; x.fillRect(60, 186, W-120, 5);
+  // kampioenskaart
+  const kx = 60, ky = 220, kw = W-120, kh = 330;
+  x.fillStyle = "#1d1a17"; x.fillRect(kx+12, ky+12, kw, kh);
+  x.fillStyle = "#c4161c"; x.fillRect(kx, ky, kw, kh);
+  x.lineWidth = 6; x.strokeStyle = "#1d1a17"; x.strokeRect(kx, ky, kw, kh);
+  x.fillStyle = "#fff"; x.font = `800 26px ${B}`; x.fillText("KAMPIOEN", kx+36, ky+34);
+  x.beginPath(); x.arc(kx+kw-80, ky+68, 46, 0, 7); x.fillStyle = "#fff"; x.fill(); x.stroke();
+  x.fillStyle = "#c4161c"; x.font = `40px ${D}`; x.textAlign = "center"; x.textBaseline = "middle";
+  x.fillText(String(kamp), kx+kw-80, ky+70); x.textAlign = "left"; x.textBaseline = "top";
+  x.fillStyle = "#fffdf8"; x.fillRect(kx+36, ky+140, kw-72, 160); x.strokeRect(kx+36, ky+140, kw-72, 160);
+  x.fillStyle = "#1d1a17"; let fs = 64; x.font = `${fs}px ${D}`;
+  let regels = regelsVoor(x, TITEL.get(kamp), kw-130);
+  while(regels.length > 2 && fs > 36){ fs -= 6; x.font = `${fs}px ${D}`; regels = regelsVoor(x, TITEL.get(kamp), kw-130); }
+  const startY = ky+140 + (160 - regels.length*fs*1.05)/2;
+  regels.slice(0,2).forEach((r,i) => x.fillText(r, kx+64, startY + i*fs*1.05));
+  // rest van de top 8
+  const rijen = [];
+  verliezersVan(2).forEach(id => rijen.push(["2", id]));
+  verliezersVan(4).forEach(id => rijen.push(["3-4", id]));
+  verliezersVan(8).forEach(id => rijen.push(["5-8", id]));
+  let y = 600;
+  for(const [plek, id] of rijen){
+    x.fillStyle = "#fff"; x.fillRect(60, y, W-120, 70);
+    x.lineWidth = 3; x.strokeStyle = "#1d1a17"; x.strokeRect(60, y, W-120, 70);
+    x.fillStyle = "#6f665c"; x.font = `34px ${D}`; x.fillText(plek, 82, y+16);
+    x.fillStyle = "#c4161c"; x.font = `800 30px ${B}`; x.fillText("#"+id, 190, y+18);
+    x.fillStyle = "#1d1a17"; x.font = `600 30px ${B}`;
+    let t = TITEL.get(id); const max = W-120-300;
+    while(x.measureText(t).width > max && t.length > 4) t = t.slice(0,-2);
+    if(t !== TITEL.get(id)) t = t.trimEnd() + "…";
+    x.fillText(t, 300, y+18);
+    y += 84;
+  }
+  x.fillStyle = "#1d1a17"; x.fillRect(60, H-110, W-120, 4);
+  x.fillStyle = "#1d1a17"; x.font = `800 28px ${B}`;
+  x.fillText("Speel zelf: " + location.host, 60, H-84);
+  x.fillStyle = "#6f665c"; x.font = `600 22px ${B}`;
+  x.fillText("Onofficieel fanproject", 60, H-46);
+  return await new Promise(res => c.toBlob(res, "image/png"));
+}
+let deelBlob = null;
+$("deel-maak").onclick = async () => {
+  deelBlob = await maakDeelbeeld();
+  if(!deelBlob) return;
+  const url = URL.createObjectURL(deelBlob);
+  $("deel-img").src = url; $("deel-img").hidden = false;
+  $("deel-download").href = url; $("deel-download").hidden = false;
+  const bestand = new File([deelBlob], "mijn-suske-en-wiske-top8.png", {type:"image/png"});
+  $("deel-delen").hidden = !(navigator.canShare && navigator.canShare({files:[bestand]}));
+  $("deel-maak").textContent = "Opnieuw maken";
+};
+$("deel-delen").onclick = async () => {
+  if(!deelBlob) return;
+  const bestand = new File([deelBlob], "mijn-suske-en-wiske-top8.png", {type:"image/png"});
+  try{ await navigator.share({files:[bestand], title:"Mijn Suske en Wiske-top 8", text:uitslagTekst()}); }catch(e){}
+};
+
+/* ---------- Nieuw toernooi ---------- */
+function vraagNieuw(){
+  if(!toernooi) return;
+  if(kampioen()){ nieuw(); return; }
+  $("dialoog").classList.add("open"); $("dialoog-nee").focus();
+}
+function nieuw(){
+  if(toernooi){ const pre = toernooi.id+":"; verzonden = new Set([...verzonden].filter(k => !k.startsWith(pre))); bewaarVerzonden(); }
+  toernooi = null; historie = []; deelBlob = null;
+  $("deel-img").hidden = true; $("deel-download").hidden = true; $("deel-delen").hidden = true; $("deel-maak").textContent = "Maak een deelafbeelding van je top 8";
+  $("kopieer-melding").textContent = "";
+  bewaar();
+  $("dialoog").classList.remove("open");
+  render(); renderLijst();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+$("knop-nieuw").onclick = vraagNieuw;
+$("opnieuw").onclick = nieuw;
+$("dialoog-ja").onclick = nieuw;
+$("dialoog-nee").onclick = () => $("dialoog").classList.remove("open");
+
+/* ---------- Fout melden ---------- */
+$("knop-fout").onclick = () => { $("fout").classList.add("open"); $("fout-melding").textContent = ""; $("fout-album").focus(); };
+$("fout-sluit").onclick = () => $("fout").classList.remove("open");
+$("fout-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const form = e.currentTarget;
+  try{
+    const res = await fetch("/", {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:new URLSearchParams(new FormData(form)).toString()});
+    if(!res.ok) throw new Error(res.status);
+    form.reset();
+    $("fout-melding").textContent = "Bedankt! Je melding is verstuurd.";
+  }catch(err){
+    $("fout-melding").textContent = "Versturen lukte niet. Probeer het later nog eens.";
+  }
+});
+for(const id of ["dialoog","fout"]){
+  $(id).addEventListener("keydown", e => { if(e.key === "Escape") $(id).classList.remove("open"); });
+  $(id).addEventListener("click", e => { if(e.target === $(id)) $(id).classList.remove("open"); });
+}
+
+/* ---------- Hoofdrender ---------- */
+function render(){
+  const bezig = !!toernooi;
+  const kamp = bezig ? kampioen() : null;
+  const pauze = bezig && !kamp && !!toernooi.pauze;
+  $("opzet").hidden = bezig;
+  $("overgang").hidden = !pauze;
+  $("spel").hidden = !bezig || !!kamp || pauze;
+  $("einde").hidden = !kamp;
+  $("knop-nieuw").hidden = !bezig;
+  if(pauze) renderOvergang();
+  if(bezig && !kamp && !pauze){
+    const d = volgendDuel(), r = huidigeRonde();
+    const echte = r.duels.filter(x => x.b !== null);
+    const nr = echte.filter(x => x.w !== null).length + 1;
+    $("ronde-naam").textContent = rondeNaam(r);
+    renderLadder("ladder-spel");
+    const totaalDuels = toernooi.totaal - 1, g = gespeeld();
+    $("voortgang-tekst").textContent = `Duel ${nr} van ${echte.length} in deze ronde · ${g} van ${totaalDuels} gespeeld`;
+    $("balk").style.width = (g/totaalDuels*100).toFixed(1)+"%";
+    vulKaart($("kaart-a"), d.a, "← linkerpijl");
+    vulKaart($("kaart-b"), d.b, "rechterpijl →");
+    $("ongedaan").disabled = historie.length === 0;
+    const kan = vetoMogelijk();
+    $("veto").disabled = !kan;
+    $("veto").title = kan ? "Beide albums krijgen een andere tegenstander uit deze ronde"
+      : "Dit is het laatste duel van de ronde, dus er zijn geen andere tegenstanders om mee te ruilen";
+  }
+  if(kamp) renderEinde(kamp);
+  $("overzicht").hidden = !bezig;
+  if(bezig) renderOverzicht();
+  renderSchema();
+}
+
+laad();
+renderLijst();
+render();
+if(toernooi) verstuurStemmen(); // eerder blijven liggen stemmen alsnog versturen
+</script>
+</body>
+</html>
